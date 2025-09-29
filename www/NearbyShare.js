@@ -1,30 +1,28 @@
-(function() {
-    var NearbyShare = {
-        shareText: function(text, success, error) {
-            if (!window.cordova || !cordova.exec) {
-                console.warn("Cordova not ready yet");
-                if (error) error("Cordova not ready");
-                return;
-            }
-            cordova.exec(success || function(){}, error || function(){}, "NearbyShareCordova", "shareText", [text]);
-        }
-    };
+var exec = cordova.require('cordova/exec');
 
-    // Wait for deviceready before exposing globally
-    function onReady() {
-        window.NearbyShare = NearbyShare;
-        console.log("NearbyShare plugin loaded");
-    }
+var NearbyShare = {
+    shareText: function(text, success, error) {
+        exec(success || function(){}, error || function(){}, "NearbyShareCordova", "shareText", [text]);
+    },
+    
+    // Polling wrapper
+    waitForPlugin: function(callback) {
+        var attempts = 0;
+        var maxAttempts = 20; // max 20 tries (~10 seconds if interval = 500ms)
+        var interval = 500; // check every 500ms
 
-    if (window.cordova) {
-        document.addEventListener("deviceready", onReady, false);
-    } else {
-        // If running in browser preview, still expose a dummy object
-        window.NearbyShare = {
-            shareText: function(text, success, error) {
-                console.log("NearbyShare called in browser preview: " + text);
-                if (success) success();
+        var checkPlugin = setInterval(function() {
+            if (typeof NearbyShare !== "undefined" && cordova && cordova.exec) {
+                clearInterval(checkPlugin);
+                callback(); // plugin is ready, run your code
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkPlugin);
+                console.error("NearbyShare plugin not loaded after waiting.");
             }
-        };
+            attempts++;
+        }, interval);
     }
-})();
+};
+
+// Make global
+window.NearbyShare = NearbyShare;
