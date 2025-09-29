@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="cordova-plugin-nearbyshare" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+    <name>NearbyShare</name>
+    <platform name="android">
+        <framework src="src/android/libs/nearbytest-nearbyshare.aar" custom="true" type="aar" />
+        <source-file src="src/android/NearbyShareCordova.java" target-dir="src/com/example/nearbyshare" />
+    </platform>
+</plugin>
+
