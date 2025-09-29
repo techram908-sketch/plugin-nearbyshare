@@ -1,21 +1,30 @@
-(function(){
-    var exec = cordova.require('cordova/exec');
-
+(function() {
     var NearbyShare = {
         shareText: function(text, success, error) {
-            function callPlugin() {
-                exec(success || function(){}, error || function(){}, "NearbyShareCordova", "shareText", [text]);
+            if (!window.cordova || !cordova.exec) {
+                console.warn("Cordova not ready yet");
+                if (error) error("Cordova not ready");
+                return;
             }
-
-            if (window.cordova && window.cordova.exec) {
-                // Cordova already ready
-                callPlugin();
-            } else {
-                // Wait for deviceready
-                document.addEventListener("deviceready", callPlugin, false);
-            }
+            cordova.exec(success || function(){}, error || function(){}, "NearbyShareCordova", "shareText", [text]);
         }
     };
 
-    window.NearbyShare = NearbyShare; // Expose globally
+    // Wait for deviceready before exposing globally
+    function onReady() {
+        window.NearbyShare = NearbyShare;
+        console.log("NearbyShare plugin loaded");
+    }
+
+    if (window.cordova) {
+        document.addEventListener("deviceready", onReady, false);
+    } else {
+        // If running in browser preview, still expose a dummy object
+        window.NearbyShare = {
+            shareText: function(text, success, error) {
+                console.log("NearbyShare called in browser preview: " + text);
+                if (success) success();
+            }
+        };
+    }
 })();
